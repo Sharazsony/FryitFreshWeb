@@ -291,7 +291,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   />
                 </div>
 
-                {field.value && (
+                {form.watch("imageUrl") && (
                   <div className="mt-4">
                     <p className="text-sm font-medium mb-2">Image Preview</p>
                     <div className="border rounded-md overflow-hidden h-40">

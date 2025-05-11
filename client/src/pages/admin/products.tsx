@@ -45,11 +45,7 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   
-  // Redirect if not admin
-  if (!isAdmin) {
-    navigate("/");
-    return null;
-  }
+  // Protected route component already handles admin check
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery<Product[]>({

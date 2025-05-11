@@ -17,6 +17,9 @@ import CheckoutPage from "@/pages/checkout-page";
 import ContactPage from "@/pages/contact-page";
 import AdminDashboard from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
+// Wrap components to ensure they always return an Element (not null)
+const AdminDashboardWrapper = () => <AdminDashboard />;
+const AdminProductsWrapper = () => <AdminProducts />;
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "./lib/protected-route";
 
@@ -35,12 +38,12 @@ function Router() {
           <Route path="/contact" component={ContactPage} />
           <ProtectedRoute 
             path="/admin" 
-            component={AdminDashboard} 
+            component={AdminDashboardWrapper}
             requiredRole="admin"
           />
           <ProtectedRoute 
             path="/admin/products" 
-            component={AdminProducts} 
+            component={AdminProductsWrapper}
             requiredRole="admin"
           />
           <Route component={NotFound} />

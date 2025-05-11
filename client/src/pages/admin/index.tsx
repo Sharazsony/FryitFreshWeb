@@ -26,13 +26,6 @@ export default function AdminDashboard() {
   const [, navigate] = useLocation();
   const { user, isAdmin } = useAuth();
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!isAdmin) {
-      navigate("/");
-    }
-  }, [isAdmin, navigate]);
-
   // Fetch data for dashboard
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -60,7 +53,8 @@ export default function AdminDashboard() {
   const totalOrders = orders.length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
   const totalUsers = users.length;
-  const unreadMessages = messages.filter(m => !m.readAt).length;
+  // Contact messages don't have readAt property, so just show total messages
+  const unreadMessages = messages.length;
 
   // Quick action links
   const quickLinks = [
@@ -94,9 +88,7 @@ export default function AdminDashboard() {
     },
   ];
 
-  if (!isAdmin) {
-    return null; // Don't render anything if not admin
-  }
+  // Protected route component already handles admin check
 
   return (
     <div className="container mx-auto px-4 py-12">
