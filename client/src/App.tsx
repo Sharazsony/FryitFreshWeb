@@ -17,9 +17,15 @@ import CheckoutPage from "@/pages/checkout-page";
 import ContactPage from "@/pages/contact-page";
 import AdminDashboard from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
+import AdminUsers from "@/pages/admin/users";
+import AdminOrders from "@/pages/admin/orders";
+import AdminMessages from "@/pages/admin/messages";
 // Wrap components to ensure they always return an Element (not null)
 const AdminDashboardWrapper = () => <AdminDashboard />;
 const AdminProductsWrapper = () => <AdminProducts />;
+const AdminUsersWrapper = () => <AdminUsers />;
+const AdminOrdersWrapper = () => <AdminOrders />;
+const AdminMessagesWrapper = () => <AdminMessages />;
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "./lib/protected-route";
 
@@ -44,6 +50,21 @@ function Router() {
           <ProtectedRoute 
             path="/admin/products" 
             component={AdminProductsWrapper}
+            requiredRole="admin"
+          />
+          <ProtectedRoute 
+            path="/admin/users" 
+            component={AdminUsersWrapper}
+            requiredRole="admin"
+          />
+          <ProtectedRoute 
+            path="/admin/orders" 
+            component={AdminOrdersWrapper}
+            requiredRole="admin"
+          />
+          <ProtectedRoute 
+            path="/admin/messages" 
+            component={AdminMessagesWrapper}
             requiredRole="admin"
           />
           <Route component={NotFound} />

@@ -100,11 +100,11 @@ export default function AdminOrders() {
       case "pending":
         return "secondary";
       case "processing":
-        return "warning";
+        return "secondary";
       case "shipped":
-        return "info";
+        return "outline";
       case "delivered":
-        return "success";
+        return "default";
       case "cancelled":
         return "destructive";
       default:
@@ -204,7 +204,7 @@ export default function AdminOrders() {
                   <div>
                     <p className="text-sm text-gray-500">
                       <Clock className="inline-block h-4 w-4 mr-1" />
-                      Last Update: {formatOrderDate(order.updatedAt)}
+                      Created: {formatOrderDate(order.createdAt)}
                     </p>
                   </div>
                   <Button 

@@ -55,26 +55,18 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/">
-              <a className={`font-medium transition-colors ${location === '/' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
+            <Link href="/" className={`font-medium transition-colors ${location === '/' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
                 Home
-              </a>
             </Link>
-            <Link href="/shop">
-              <a className={`font-medium transition-colors ${location === '/shop' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
+            <Link href="/shop" className={`font-medium transition-colors ${location === '/shop' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
                 Shop
-              </a>
             </Link>
-            <Link href="/contact">
-              <a className={`font-medium transition-colors ${location === '/contact' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
+            <Link href="/contact" className={`font-medium transition-colors ${location === '/contact' ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
                 Contact
-              </a>
             </Link>
             {isAdmin && (
-              <Link href="/admin">
-                <a className={`font-medium transition-colors ${location.startsWith('/admin') ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
+              <Link href="/admin" className={`font-medium transition-colors ${location.startsWith('/admin') ? 'text-primary' : 'text-gray-700 hover:text-primary'}`}>
                   Admin
-                </a>
               </Link>
             )}
           </nav>
@@ -101,15 +93,15 @@ export default function Header() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
+                  <DropdownMenuItem>
+                    <span onClick={() => window.location.href = '/profile'}>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders">My Orders</Link>
+                  <DropdownMenuItem>
+                    <span onClick={() => window.location.href = '/orders'}>My Orders</span>
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin">Admin Dashboard</Link>
+                    <DropdownMenuItem>
+                      <span onClick={() => window.location.href = '/admin'}>Admin Dashboard</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
@@ -160,26 +152,18 @@ export default function Header() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden py-3 space-y-1">
-            <Link href="/">
-              <a className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/' ? 'bg-neutral-dark' : ''}`}>
+            <Link href="/" className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/' ? 'bg-neutral-dark' : ''}`}>
                 Home
-              </a>
             </Link>
-            <Link href="/shop">
-              <a className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/shop' ? 'bg-neutral-dark' : ''}`}>
+            <Link href="/shop" className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/shop' ? 'bg-neutral-dark' : ''}`}>
                 Shop
-              </a>
             </Link>
-            <Link href="/contact">
-              <a className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/contact' ? 'bg-neutral-dark' : ''}`}>
+            <Link href="/contact" className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location === '/contact' ? 'bg-neutral-dark' : ''}`}>
                 Contact
-              </a>
             </Link>
             {isAdmin && (
-              <Link href="/admin">
-                <a className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location.startsWith('/admin') ? 'bg-neutral-dark' : ''}`}>
+              <Link href="/admin" className={`block px-4 py-2 text-gray-700 hover:bg-neutral-dark transition-all rounded-md ${location.startsWith('/admin') ? 'bg-neutral-dark' : ''}`}>
                   Admin
-                </a>
               </Link>
             )}
           </div>
