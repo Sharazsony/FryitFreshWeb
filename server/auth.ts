@@ -23,10 +23,24 @@ async function hashPassword(password: string) {
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  try {
+    // Handle the case where the password might not have a salt (for legacy passwords)
+    if (!stored.includes('.')) {
+      console.log('Password format error: no salt separator found');
+      return false;
+    }
+    
+    const [hashed, salt] = stored.split(".");
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    
+    const result = timingSafeEqual(hashedBuf, suppliedBuf);
+    console.log(`Password check: ${result ? 'success' : 'failed'}`);
+    return result;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -51,13 +65,28 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        const user = await storage.getUserByUsername(username);
+        // Check if input is email or username
+        const isEmail = username.includes('@');
+        
+        // Get user by username or email
+        let user;
+        if (isEmail) {
+          user = await storage.getUserByEmail(username);
+        } else {
+          user = await storage.getUserByUsername(username);
+        }
+        
+        // Log authentication attempt for debugging
+        console.log(`Auth attempt: ${username}, User found: ${!!user}`);
+        
         if (!user || !(await comparePasswords(password, user.password))) {
+          console.log('Password check failed');
           return done(null, false, { message: "Invalid username or password" });
         }
         
         return done(null, user);
       } catch (error) {
+        console.error('Auth error:', error);
         return done(error);
       }
     }),
