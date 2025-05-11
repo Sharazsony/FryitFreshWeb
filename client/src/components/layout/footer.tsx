@@ -30,23 +30,23 @@ export default function Footer() {
             <h3 className="font-heading font-bold text-xl mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/">
-                  <a className="hover:text-accent transition-all">Home</a>
+                <Link href="/" className="hover:text-accent transition-all">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/shop">
-                  <a className="hover:text-accent transition-all">Shop</a>
+                <Link href="/shop" className="hover:text-accent transition-all">
+                  Shop
                 </Link>
               </li>
               <li>
-                <Link href="/contact">
-                  <a className="hover:text-accent transition-all">Contact</a>
+                <Link href="/contact" className="hover:text-accent transition-all">
+                  Contact
                 </Link>
               </li>
               <li>
-                <Link href="/auth">
-                  <a className="hover:text-accent transition-all">Sign In</a>
+                <Link href="/auth" className="hover:text-accent transition-all">
+                  Sign In
                 </Link>
               </li>
             </ul>
@@ -57,8 +57,8 @@ export default function Footer() {
             <h3 className="font-heading font-bold text-xl mb-4">Customer Service</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/cart">
-                  <a className="hover:text-accent transition-all">My Cart</a>
+                <Link href="/cart" className="hover:text-accent transition-all">
+                  My Cart
                 </Link>
               </li>
               <li>
