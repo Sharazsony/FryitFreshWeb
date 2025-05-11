@@ -58,8 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      // Validate with Zod
-      userRegistrationSchema.parse(userData);
+      // No need to validate here - already validated in the form
       const res = await apiRequest("POST", "/api/register", userData);
       return await res.json();
     },

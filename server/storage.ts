@@ -276,17 +276,33 @@ export class DatabaseStorage implements IStorage {
   
   // Helper methods for initialization
   private async initializeAdminUser() {
-    // Check if admin user exists
+    // Check if admin users exist
     const adminUser = await this.getUserByUsername("admin");
+    const adminGmailUser = await this.getUserByEmail("admin@gmail.com");
+    
+    // Create default admin user if not exists
     if (!adminUser) {
-      // Create admin user
-      console.log("Creating admin user...");
+      console.log("Creating default admin user...");
       await this.createUser({
         username: "admin",
         email: "admin@fruitfresh.com",
         password: "$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm", // 'password'
         firstName: "Admin",
         lastName: "User",
+        role: "admin"
+      });
+    }
+    
+    // Create Gmail admin user if not exists
+    if (!adminGmailUser) {
+      console.log("Creating Gmail admin user...");
+      // Create admin with email admin@gmail.com and password admin123
+      await this.createUser({
+        username: "adminGmail",
+        email: "admin@gmail.com",
+        password: "$2b$10$dh/iZwZ3vTjqsD7LlvGx2eqAeAm3sJv0lHQJWI4Z8MeClxVn9ZONu", // 'admin123'
+        firstName: "Admin",
+        lastName: "Gmail",
         role: "admin"
       });
     }
