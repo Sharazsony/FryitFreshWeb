@@ -286,7 +286,7 @@ export class DatabaseStorage implements IStorage {
       await this.createUser({
         username: "admin",
         email: "admin@fruitfresh.com",
-        password: "$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm", // 'password'
+        password: "7e668ec1258db52f0fa99b64062711f28ad77c91db79ff2978037307a8f0df74eb47fb5352aca298b474d782c7df5274384037bb0d53b7a12d85ffd5469ca4d8.b288d6076b0f05f5edf4a579fb7e3a26", // 'password'
         firstName: "Admin",
         lastName: "User",
         role: "admin"
@@ -300,7 +300,7 @@ export class DatabaseStorage implements IStorage {
       await this.createUser({
         username: "adminGmail",
         email: "admin@gmail.com",
-        password: "$2b$10$dh/iZwZ3vTjqsD7LlvGx2eqAeAm3sJv0lHQJWI4Z8MeClxVn9ZONu", // 'admin123'
+        password: "cedccf8b92771cbdc1760f18daf871c080b070af4f6e038a0739c1b463a419f18b6d454f90e8627c622cfa4442d9da998a75bae0930377386a169c5cf4549e94.f8ebf353cd0261c679701aefea353081", // 'admin123'
         firstName: "Admin",
         lastName: "Gmail",
         role: "admin"
