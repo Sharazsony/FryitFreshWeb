@@ -8,9 +8,12 @@ import {
   type ContactMessage, type InsertContactMessage
 } from "@shared/schema";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 // Interface for storage operations
 export interface IStorage {
@@ -47,315 +50,334 @@ export interface IStorage {
   getAllContactMessages(): Promise<ContactMessage[]>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any to avoid type issues with session store
 }
 
-// In-memory storage implementation
-export class MemStorage implements IStorage {
-  private userStore: Map<number, User>;
-  private productStore: Map<number, Product>;
-  private cartItemStore: Map<number, CartItem>;
-  private orderStore: Map<number, Order>;
-  private orderItemStore: Map<number, OrderItem>;
-  private contactMessageStore: Map<number, ContactMessage>;
-  
-  sessionStore: session.SessionStore;
-  
-  private userId: number = 1;
-  private productId: number = 1;
-  private cartItemId: number = 1;
-  private orderId: number = 1;
-  private orderItemId: number = 1;
-  private contactMessageId: number = 1;
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  sessionStore: any; // Using any type for session store
   
   constructor() {
-    this.userStore = new Map();
-    this.productStore = new Map();
-    this.cartItemStore = new Map();
-    this.orderStore = new Map();
-    this.orderItemStore = new Map();
-    this.contactMessageStore = new Map();
-    
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // Prune expired entries every 24h
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
     });
     
-    // Create admin user
-    this.createUser({
-      username: "admin",
-      email: "admin@fruitfresh.com",
-      password: "hashed_admin_password", // This will be hashed in auth.ts
-      firstName: "Admin",
-      lastName: "User",
-      role: "admin"
-    });
+    // Initially check if we need to create an admin user
+    this.initializeAdminUser();
     
-    // Seed some initial products
-    this.seedProducts();
+    // Seed products if needed
+    this.seedProductsIfEmpty();
   }
   
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.userStore.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.userStore.values()).find(
-      (user) => user.username.toLowerCase() === username.toLowerCase()
-    );
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username.toLowerCase()));
+    return user;
   }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.userStore.values()).find(
-      (user) => user.email.toLowerCase() === email.toLowerCase()
-    );
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email.toLowerCase()));
+    return user;
   }
   
   async createUser(user: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const timestamp = new Date();
-    const newUser: User = { ...user, id };
-    this.userStore.set(id, newUser);
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        ...user,
+        username: user.username.toLowerCase(),
+        email: user.email.toLowerCase()
+      })
+      .returning();
     return newUser;
   }
   
   async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
-    const user = this.userStore.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...userData };
-    this.userStore.set(id, updatedUser);
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
     return updatedUser;
   }
   
   // Product methods
   async getProduct(id: number): Promise<Product | undefined> {
-    return this.productStore.get(id);
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, id));
+    return product;
   }
   
   async getAllProducts(): Promise<Product[]> {
-    return Array.from(this.productStore.values());
+    return db.select().from(products);
   }
   
   async getProductsByCategory(category: string): Promise<Product[]> {
-    return Array.from(this.productStore.values()).filter(
-      (product) => product.category === category
-    );
+    return db
+      .select()
+      .from(products)
+      .where(eq(products.category, category));
   }
   
   async createProduct(product: InsertProduct): Promise<Product> {
-    const id = this.productId++;
-    const newProduct: Product = { 
-      ...product, 
-      id,
-      createdAt: new Date()
-    };
-    this.productStore.set(id, newProduct);
+    const [newProduct] = await db
+      .insert(products)
+      .values(product)
+      .returning();
     return newProduct;
   }
   
   async updateProduct(id: number, productData: Partial<InsertProduct>): Promise<Product | undefined> {
-    const product = this.productStore.get(id);
-    if (!product) return undefined;
-    
-    const updatedProduct = { ...product, ...productData };
-    this.productStore.set(id, updatedProduct);
+    const [updatedProduct] = await db
+      .update(products)
+      .set(productData)
+      .where(eq(products.id, id))
+      .returning();
     return updatedProduct;
   }
   
   async deleteProduct(id: number): Promise<boolean> {
-    return this.productStore.delete(id);
+    const result = await db
+      .delete(products)
+      .where(eq(products.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
   
   // Cart methods
   async getCartItems(userId: number): Promise<CartItem[]> {
-    return Array.from(this.cartItemStore.values()).filter(
-      (item) => item.userId === userId
-    );
+    return db
+      .select()
+      .from(cartItems)
+      .where(eq(cartItems.userId, userId));
   }
   
   async addToCart(cartItem: InsertCartItem): Promise<CartItem> {
     // Check if this product is already in the cart
-    const existingItem = Array.from(this.cartItemStore.values()).find(
-      (item) => item.userId === cartItem.userId && item.productId === cartItem.productId
-    );
+    const [existingItem] = await db
+      .select()
+      .from(cartItems)
+      .where(
+        and(
+          eq(cartItems.userId, cartItem.userId),
+          eq(cartItems.productId, cartItem.productId)
+        )
+      );
     
     if (existingItem) {
       // Update quantity instead of adding a new item
       return this.updateCartItemQuantity(existingItem.id, existingItem.quantity + cartItem.quantity) as Promise<CartItem>;
     }
     
-    const id = this.cartItemId++;
-    const newCartItem: CartItem = { 
-      ...cartItem, 
-      id,
-      addedAt: new Date()
-    };
-    this.cartItemStore.set(id, newCartItem);
+    const [newCartItem] = await db
+      .insert(cartItems)
+      .values(cartItem)
+      .returning();
     return newCartItem;
   }
   
   async updateCartItemQuantity(id: number, quantity: number): Promise<CartItem | undefined> {
-    const cartItem = this.cartItemStore.get(id);
-    if (!cartItem) return undefined;
-    
-    const updatedCartItem = { ...cartItem, quantity };
-    this.cartItemStore.set(id, updatedCartItem);
+    const [updatedCartItem] = await db
+      .update(cartItems)
+      .set({ quantity })
+      .where(eq(cartItems.id, id))
+      .returning();
     return updatedCartItem;
   }
   
   async removeFromCart(id: number): Promise<boolean> {
-    return this.cartItemStore.delete(id);
+    const result = await db
+      .delete(cartItems)
+      .where(eq(cartItems.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
   
   async clearCart(userId: number): Promise<boolean> {
-    const cartItemsToDelete = Array.from(this.cartItemStore.values())
-      .filter(item => item.userId === userId)
-      .map(item => item.id);
-    
-    cartItemsToDelete.forEach(id => this.cartItemStore.delete(id));
+    const result = await db
+      .delete(cartItems)
+      .where(eq(cartItems.userId, userId));
     return true;
   }
   
   // Order methods
   async createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order> {
-    const id = this.orderId++;
-    const newOrder: Order = { 
-      ...order, 
-      id,
-      createdAt: new Date()
-    };
-    this.orderStore.set(id, newOrder);
+    // Create the order
+    const [newOrder] = await db
+      .insert(orders)
+      .values(order)
+      .returning();
     
     // Add order items
-    items.forEach(item => {
-      const orderItemId = this.orderItemId++;
-      const newOrderItem: OrderItem = { 
-        ...item, 
-        orderId: id,
-        id: orderItemId
-      };
-      this.orderItemStore.set(orderItemId, newOrderItem);
-    });
+    for (const item of items) {
+      await db
+        .insert(orderItems)
+        .values({
+          ...item,
+          orderId: newOrder.id
+        });
+    }
     
     return newOrder;
   }
   
   async getOrder(id: number): Promise<Order | undefined> {
-    return this.orderStore.get(id);
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id));
+    return order;
   }
   
   async getUserOrders(userId: number): Promise<Order[]> {
-    return Array.from(this.orderStore.values())
-      .filter(order => order.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return db
+      .select()
+      .from(orders)
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
   }
   
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
-    const order = this.orderStore.get(id);
-    if (!order) return undefined;
-    
-    const updatedOrder = { ...order, status };
-    this.orderStore.set(id, updatedOrder);
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({ status })
+      .where(eq(orders.id, id))
+      .returning();
     return updatedOrder;
   }
   
   // Contact methods
   async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
-    const id = this.contactMessageId++;
-    const newMessage: ContactMessage = { 
-      ...message, 
-      id,
-      createdAt: new Date()
-    };
-    this.contactMessageStore.set(id, newMessage);
+    const [newMessage] = await db
+      .insert(contactMessages)
+      .values(message)
+      .returning();
     return newMessage;
   }
   
   async getAllContactMessages(): Promise<ContactMessage[]> {
-    return Array.from(this.contactMessageStore.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return db
+      .select()
+      .from(contactMessages)
+      .orderBy(desc(contactMessages.createdAt));
   }
   
-  // Helper method to seed initial products
-  private seedProducts() {
-    const products: InsertProduct[] = [
-      {
-        name: "Organic Apples",
-        description: "Fresh, locally grown organic apples. Perfect for eating or baking.",
-        price: 399, // $3.99
-        category: "fruits",
-        imageUrl: "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "lb",
-        stock: 50
-      },
-      {
-        name: "Organic Carrots",
-        description: "Sweet and crunchy organic carrots freshly harvested from local farms.",
-        price: 249, // $2.49
-        category: "vegetables",
-        imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "bunch",
-        stock: 40
-      },
-      {
-        name: "Organic Strawberries",
-        description: "Sweet and juicy organic strawberries. Perfect for desserts or snacking.",
-        price: 499, // $4.99
-        category: "fruits",
-        imageUrl: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "pint",
-        stock: 30
-      },
-      {
-        name: "Organic Spinach",
-        description: "Fresh organic spinach, rich in nutrients and perfect for salads or cooking.",
-        price: 349, // $3.49
-        category: "vegetables",
-        imageUrl: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "bunch",
-        stock: 35
-      },
-      {
-        name: "Organic Tomatoes",
-        description: "Vine-ripened organic tomatoes, bursting with flavor and freshness.",
-        price: 399, // $3.99
-        category: "vegetables",
-        imageUrl: "https://pixabay.com/get/g4fc77db397e07a75e917b446f202ea846ee51018bc165e6924e54bf8c205371f152ec6fa41b0d8af842f6ef7a37b4583_1280.jpg",
-        unit: "lb",
-        stock: 45
-      },
-      {
-        name: "Organic Avocados",
-        description: "Creamy, nutrient-rich organic avocados. Perfect for any meal or snack.",
-        price: 299, // $2.99
-        category: "fruits",
-        imageUrl: "https://pixabay.com/get/g68ebe6159455aff2dacbb2ad22d588574d7f6433ea98a227fc8b456000401b3b82ae336b8f7597726ceaf1a817eb0890a42a27cedb57f13e9a9c7d1a494aa2ed_1280.jpg",
-        unit: "each",
-        stock: 38
-      },
-      {
-        name: "Organic Kale",
-        description: "Nutrient-dense organic kale, freshly harvested and ready for your healthy recipes.",
-        price: 299, // $2.99
-        category: "vegetables",
-        imageUrl: "https://images.unsplash.com/photo-1524179091875-bf99a9a6af57?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "bunch",
-        stock: 25
-      },
-      {
-        name: "Organic Blueberries",
-        description: "Sweet, plump organic blueberries packed with antioxidants.",
-        price: 599, // $5.99
-        category: "fruits",
-        imageUrl: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
-        unit: "pint",
-        stock: 20
+  // Helper methods for initialization
+  private async initializeAdminUser() {
+    // Check if admin user exists
+    const adminUser = await this.getUserByUsername("admin");
+    if (!adminUser) {
+      // Create admin user
+      console.log("Creating admin user...");
+      await this.createUser({
+        username: "admin",
+        email: "admin@fruitfresh.com",
+        password: "$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm", // 'password'
+        firstName: "Admin",
+        lastName: "User",
+        role: "admin"
+      });
+    }
+  }
+  
+  private async seedProductsIfEmpty() {
+    // Check if there are any products
+    const productCount = await db.select().from(products);
+    if (productCount.length === 0) {
+      console.log("Seeding initial products...");
+      const productData: InsertProduct[] = [
+        {
+          name: "Organic Apples",
+          description: "Fresh, locally grown organic apples. Perfect for eating or baking.",
+          price: 399, // $3.99
+          category: "fruits",
+          imageUrl: "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "lb",
+          stock: 50
+        },
+        {
+          name: "Organic Carrots",
+          description: "Sweet and crunchy organic carrots freshly harvested from local farms.",
+          price: 249, // $2.49
+          category: "vegetables",
+          imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "bunch",
+          stock: 40
+        },
+        {
+          name: "Organic Strawberries",
+          description: "Sweet and juicy organic strawberries. Perfect for desserts or snacking.",
+          price: 499, // $4.99
+          category: "fruits",
+          imageUrl: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "pint",
+          stock: 30
+        },
+        {
+          name: "Organic Spinach",
+          description: "Fresh organic spinach, rich in nutrients and perfect for salads or cooking.",
+          price: 349, // $3.49
+          category: "vegetables",
+          imageUrl: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "bunch",
+          stock: 35
+        },
+        {
+          name: "Organic Tomatoes",
+          description: "Vine-ripened organic tomatoes, bursting with flavor and freshness.",
+          price: 399, // $3.99
+          category: "vegetables",
+          imageUrl: "https://pixabay.com/get/g4fc77db397e07a75e917b446f202ea846ee51018bc165e6924e54bf8c205371f152ec6fa41b0d8af842f6ef7a37b4583_1280.jpg",
+          unit: "lb",
+          stock: 45
+        },
+        {
+          name: "Organic Avocados",
+          description: "Creamy, nutrient-rich organic avocados. Perfect for any meal or snack.",
+          price: 299, // $2.99
+          category: "fruits",
+          imageUrl: "https://pixabay.com/get/g68ebe6159455aff2dacbb2ad22d588574d7f6433ea98a227fc8b456000401b3b82ae336b8f7597726ceaf1a817eb0890a42a27cedb57f13e9a9c7d1a494aa2ed_1280.jpg",
+          unit: "each",
+          stock: 38
+        },
+        {
+          name: "Organic Kale",
+          description: "Nutrient-dense organic kale, freshly harvested and ready for your healthy recipes.",
+          price: 299, // $2.99
+          category: "vegetables",
+          imageUrl: "https://images.unsplash.com/photo-1524179091875-bf99a9a6af57?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "bunch",
+          stock: 25
+        },
+        {
+          name: "Organic Blueberries",
+          description: "Sweet, plump organic blueberries packed with antioxidants.",
+          price: 599, // $5.99
+          category: "fruits",
+          imageUrl: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500",
+          unit: "pint",
+          stock: 20
+        }
+      ];
+      
+      // Insert each product
+      for (const product of productData) {
+        await this.createProduct(product);
       }
-    ];
-    
-    products.forEach(product => this.createProduct(product));
+    }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
