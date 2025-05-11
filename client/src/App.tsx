@@ -15,7 +15,7 @@ import ProductDetails from "@/pages/product-details";
 import CartPage from "@/pages/cart-page";
 import CheckoutPage from "@/pages/checkout-page";
 import ContactPage from "@/pages/contact-page";
-import AdminDashboard from "@/pages/admin/dashboard";
+import AdminDashboard from "@/pages/admin/index";
 import AdminProducts from "@/pages/admin/products";
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "./lib/protected-route";

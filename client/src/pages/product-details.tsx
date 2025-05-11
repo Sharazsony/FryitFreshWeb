@@ -113,47 +113,90 @@ export default function ProductDetails() {
             <p className="text-gray-600">{product.description}</p>
           </div>
           
-          <div className="mb-8">
-            <h3 className="font-bold text-lg mb-2">Quantity</h3>
-            <div className="flex items-center">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-              >
-                <i className="fas fa-minus"></i>
-              </Button>
+          {/* Stock Status */}
+          <div className="mb-4">
+            {product.stock > 5 ? (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                In Stock ({product.stock} available)
+              </div>
+            ) : product.stock > 0 ? (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                Low Stock (Only {product.stock} left)
+              </div>
+            ) : (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                Out of Stock
+              </div>
+            )}
+          </div>
+
+          {product.stock > 0 ? (
+            <>
+              <div className="mb-8">
+                <h3 className="font-bold text-lg mb-2">Quantity</h3>
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                  >
+                    -
+                  </Button>
+                  
+                  <Input
+                    type="number"
+                    min="1"
+                    max={product.stock}
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    className="w-16 mx-2 text-center"
+                  />
+                  
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
               
-              <Input
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={handleQuantityChange}
-                className="w-16 mx-2 text-center"
-              />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  onClick={handleAddToCart} 
+                  className="bg-accent hover:bg-opacity-90 text-white" 
+                  size="lg"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </Button>
+                
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/shop">
+                    Continue Shopping
+                  </Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-700 font-medium">
+                  This item is currently out of stock. Please check back later or browse other products.
+                </p>
+              </div>
               
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setQuantity(quantity + 1)}
-              >
-                <i className="fas fa-plus"></i>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/shop">
+                  Continue Shopping
+                </Link>
               </Button>
             </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button onClick={handleAddToCart} className="bg-accent hover:bg-opacity-90 text-white" size="lg">
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Cart
-            </Button>
-            
-            <Button asChild variant="outline" size="lg">
-              <Link href="/shop">
-                Continue Shopping
-              </Link>
-            </Button>
-          </div>
+          )}
           
           <div className="mt-8 border-t pt-6">
             <div className="flex items-center mb-4">
