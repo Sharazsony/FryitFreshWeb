@@ -32,8 +32,8 @@ export async function sendContactNotification(message: InsertContactMessage) {
   const transporter = createTransporter();
   
   const mailOptions = {
-    from: process.env.EMAIL_USER || '"FruitFresh" <notifications@fruitfresh.com>',
-    to: process.env.ADMIN_EMAIL || "admin@fruitfresh.com",
+    from: process.env.EMAIL_USER || '"FruitFresh" <sharazsony@gmail.com>',
+    to: process.env.ADMIN_EMAIL || "sharazsony@gmail.com",
     subject: `Contact Form: ${message.subject}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -89,7 +89,7 @@ export async function sendOrderConfirmation(user: User, order: Order, orderItems
   `).join('');
   
   const mailOptions = {
-    from: process.env.EMAIL_USER || '"FruitFresh" <orders@fruitfresh.com>',
+    from: process.env.EMAIL_USER || '"FruitFresh" <sharazsony@gmail.com>',
     to: user.email,
     subject: `Order Confirmation #${order.id}`,
     html: `
@@ -132,7 +132,7 @@ export async function sendOrderConfirmation(user: User, order: Order, orderItems
             </tfoot>
           </table>
           
-          <p style="margin-top: 30px;">If you have any questions about your order, please contact our customer support team at support@fruitfresh.com.</p>
+          <p style="margin-top: 30px;">If you have any questions about your order, please contact our customer support team at sharazsony@gmail.com.</p>
           
           <p>Thank you for supporting local farmers and choosing organic!</p>
           
@@ -140,8 +140,8 @@ export async function sendOrderConfirmation(user: User, order: Order, orderItems
         </div>
         
         <div style="background-color: #f5f5f5; padding: 20px; text-align: center; color: #777; font-size: 14px;">
-          <p>© 2023 FruitFresh. All rights reserved.</p>
-          <p>123 Organic Way, Farmville, CA 95123</p>
+          <p>© ${new Date().getFullYear()} FruitFresh. All rights reserved.</p>
+          <p>Fast NUCES, chionot FSD</p>
         </div>
       </div>
     `,

@@ -15,8 +15,14 @@ export default function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="relative">
-        <div className="h-96 md:h-[30rem] bg-cover bg-center" style={{backgroundImage: "url('https://pixabay.com/get/g573a20c558642ea3c5ec417c27b98a0636d4a5d1a1c9570c5ea5558f820f09cc70529dd5e3fb7bae29e0c196466b5454aeb7cac63c72c7b858cb42469890fa6f_1280.jpg')"}}>
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div
+          className="h-96 md:h-[30rem] bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=1200&q=80')",
+          }}
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
           <div className="container mx-auto px-4 h-full flex items-center relative z-10">
             <div className="max-w-xl text-white">
               <h1 className="font-accent text-4xl md:text-5xl font-bold mb-4">Fresh Organic Produce Delivered To Your Door</h1>

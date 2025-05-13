@@ -71,7 +71,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">Address</h3>
-                      <p className="text-gray-600">123 Organic Way, Farmville, CA 95123</p>
+                      <p className="text-gray-600">Fast NUCES, chionot FSD</p>
                     </div>
                   </div>
 
@@ -81,7 +81,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">Phone</h3>
-                      <p className="text-gray-600">(555) 123-4567</p>
+                      <p className="text-gray-600">03237899753</p>
                     </div>
                   </div>
 
@@ -91,7 +91,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">Email</h3>
-                      <p className="text-gray-600">support@fruitfresh.com</p>
+                      <p className="text-gray-600">sharazsony@gmail.com</p>
                     </div>
                   </div>
 

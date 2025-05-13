@@ -82,15 +82,15 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-start">
                 <i className="fas fa-map-marker-alt mt-1 mr-3"></i>
-                <span>123 Organic Way, Farmville, CA 95123</span>
+                <span>Fast NUCES, chionot FSD</span>
               </li>
               <li className="flex items-center">
                 <i className="fas fa-phone-alt mr-3"></i>
-                <span>(555) 123-4567</span>
+                <span>03237899753</span>
               </li>
               <li className="flex items-center">
                 <i className="fas fa-envelope mr-3"></i>
-                <span>support@fruitfresh.com</span>
+                <span>sharazsony@gmail.com</span>
               </li>
               <li className="flex items-center">
                 <i className="fas fa-clock mr-3"></i>
