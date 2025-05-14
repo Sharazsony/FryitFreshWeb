@@ -2,7 +2,8 @@
 
 FruitFreshTracker is a modern, full-stack web application for tracking, selling, and managing fresh organic produce. Built with TypeScript, React, Express, and PostgreSQL, it provides a beautiful, responsive, and feature-rich experience for both customers and administrators.
 
-![Hero Screenshot](client/src/assets/hero-screenshot.png)
+
+![image](https://github.com/user-attachments/assets/2943f728-14f3-4753-afbe-96077b1df959)
 
 ---
 
@@ -19,7 +20,7 @@ FruitFreshTracker is a modern, full-stack web application for tracking, selling,
 ---
 
 ## 📸 Screenshots
-> Add your screenshots in `client/src/assets/` and update the image links below.
+
 
 | Home Page | Product Details | Admin Dashboard |
 |---|---|---|
